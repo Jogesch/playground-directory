@@ -3,10 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import { PlaygroundCard } from '../components/PlaygroundCard.astro';
 import { SearchBar } from '../components/SearchBar.astro';
 import { FilterBar } from '../components/FilterBar.astro';
+import playgroundsData from '../../london_playgrounds.json';
 
-// Imports and data fetching
-const response = await fetch('../data/london_playgrounds.json');
-const playgrounds = await response.json();
+const playgrounds = playgroundsData;
 
 // Get featured playgrounds (highest rated)
 const featuredPlaygrounds = playgrounds

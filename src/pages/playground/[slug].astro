@@ -1,9 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import playgroundsData from '../../../london_playgrounds.json';
 
 export async function getStaticPaths() {
-  const response = await fetch('../../data/london_playgrounds.json');
-  const playgrounds = await response.json();
+  const playgrounds = playgroundsData;
   
   return playgrounds.map((playground) => {
     const slug = playground.name
