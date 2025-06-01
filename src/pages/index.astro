@@ -3,7 +3,7 @@ import { PlaygroundCard } from '../components/PlaygroundCard.astro';
 import { SearchBar } from '../components/SearchBar.astro';
 import { FilterBar } from '../components/FilterBar.astro';
 
-// We'll need to process the JSON data here
+// Imports and data fetching
 const response = await fetch('../data/london_playgrounds.json');
 const playgrounds = await response.json();
 
