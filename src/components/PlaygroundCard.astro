@@ -1,15 +1,10 @@
 ---
 const { playground } = Astro.props;
 
-// Function to create a slug from the playground name
-const createSlug = (name) => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-};
-
-const slug = createSlug(playground.name);
+// Ensure we have a valid playground with a slug
+if (!playground || !playground.slug) {
+  throw new Error('Invalid playground data: missing slug');
+}
 ---
 
 <article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
@@ -42,7 +37,7 @@ const slug = createSlug(playground.name);
         {playground.reviews && `${playground.reviews} reviews`}
       </div>
       <a
-        href={`/playground/${slug}`}
+        href={`/playground/${playground.slug}`}
         class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
       >
         View Details

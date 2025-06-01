@@ -2,23 +2,43 @@
 import Layout from '../../layouts/Layout.astro';
 import playgroundsData from '../../../london_playgrounds.json';
 
+// Function to create a valid slug
+function createSlug(name: string) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 export async function getStaticPaths() {
   const playgrounds = playgroundsData;
   
-  return playgrounds.map((playground) => {
-    const slug = playground.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+  return playgrounds
+    .filter(playground => playground.name && typeof playground.name === 'string')
+    .map((playground) => {
+      const slug = createSlug(playground.name);
       
-    return {
-      params: { slug },
-      props: { playground },
-    };
-  });
+      // Skip if slug is empty
+      if (!slug) {
+        console.warn(`Warning: Could not generate valid slug for playground "${playground.name}"`);
+        return null;
+      }
+      
+      return {
+        params: { slug },
+        props: { playground },
+      };
+    })
+    .filter(Boolean); // Remove any null entries
 }
 
 const { playground } = Astro.props;
+
+// Add type safety
+if (!playground || !playground.name) {
+  throw new Error('Invalid playground data');
+}
 ---
 
 <Layout title={`${playground.name} - London Playgrounds`}>
