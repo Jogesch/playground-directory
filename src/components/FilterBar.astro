@@ -1,0 +1,477 @@
+---
+const sortOptions = [
+  { value: 'rating-desc', label: 'Highest Rated' },
+  { value: 'rating-asc', label: 'Lowest Rated' },
+  { value: 'reviews-desc', label: 'Most Reviewed' },
+  { value: 'name-asc', label: 'Name (A-Z)' },
+  { value: 'name-desc', label: 'Name (Z-A)' }
+];
+
+// These will be dynamically populated based on your data
+const areas = [
+  'North London',
+  'South London',
+  'East London',
+  'West London',
+  'Central London'
+];
+
+const ageRanges = [
+  'All Ages',
+  'Toddlers',
+  'Pre-school',
+  'School Age',
+  'Teenagers'
+];
+
+const amenities = [
+  'Swings',
+  'Slides',
+  'Climbing Frame',
+  'Sandbox',
+  'Water Play',
+  'Seating Area',
+  'Toilets',
+  'Parking'
+];
+
+// Default presets (can be extended)
+const defaultPresets = [
+  {
+    name: 'Toddler-Friendly',
+    filters: ['Toddlers', 'Swings', 'Sandbox', 'Toilets'],
+    sort: 'rating-desc'
+  },
+  {
+    name: 'School Age Adventure',
+    filters: ['School Age', 'Climbing Frame', 'Water Play'],
+    sort: 'rating-desc'
+  }
+];
+---
+
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+  <!-- Presets Section -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <label class="block text-sm font-medium text-gray-700">Saved Filters</label>
+      <button
+        id="save-preset"
+        class="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+      >
+        Save Current Filters
+      </button>
+    </div>
+    <div class="flex flex-wrap gap-2" id="presets-container">
+      <!-- Presets will be populated here -->
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Sort Options -->
+    <div>
+      <label for="sort" class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+      <select
+        id="sort"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+      >
+        {sortOptions.map(option => (
+          <option value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    </div>
+
+    <!-- Area Filter -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Area</label>
+      <div class="space-y-2 max-h-40 overflow-y-auto">
+        {areas.map(area => (
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="area"
+              value={area}
+              class="rounded text-green-600 focus:ring-green-500"
+            />
+            <span class="text-sm">{area}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Age Range Filter -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
+      <div class="space-y-2">
+        {ageRanges.map(range => (
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="age"
+              value={range}
+              class="rounded text-green-600 focus:ring-green-500"
+            />
+            <span class="text-sm">{range}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Amenities Filter -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
+      <div class="space-y-2 max-h-40 overflow-y-auto">
+        {amenities.map(amenity => (
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="amenities"
+              value={amenity}
+              class="rounded text-green-600 focus:ring-green-500"
+            />
+            <span class="text-sm">{amenity}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Filters Display -->
+  <div class="mt-4 flex flex-wrap gap-2" id="active-filters">
+    <!-- Active filters will be displayed here -->
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="mt-4 flex justify-between items-center">
+    <button
+      id="share-filters"
+      class="text-sm text-green-600 hover:text-green-800 underline"
+    >
+      Share Filters
+    </button>
+    <button
+      id="clear-filters"
+      class="text-sm text-gray-600 hover:text-gray-800 underline"
+    >
+      Clear all filters
+    </button>
+  </div>
+</div>
+
+<!-- Save Preset Modal -->
+<div id="preset-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+    <h3 class="text-lg font-bold mb-4">Save Filter Preset</h3>
+    <input
+      type="text"
+      id="preset-name"
+      placeholder="Enter preset name"
+      class="w-full p-2 border rounded mb-4"
+    />
+    <div class="flex justify-end gap-2">
+      <button
+        id="cancel-preset"
+        class="px-4 py-2 text-gray-600 hover:text-gray-800"
+      >
+        Cancel
+      </button>
+      <button
+        id="confirm-preset"
+        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+      >
+        Save
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Storage keys
+  const STORAGE_KEYS = {
+    FILTERS: 'playground-filters',
+    SORT: 'playground-sort',
+    PRESETS: 'playground-presets'
+  };
+
+  // DOM Elements
+  const elements = {
+    filtersContainer: document.getElementById('active-filters'),
+    sortSelect: document.getElementById('sort') as HTMLSelectElement,
+    clearFiltersButton: document.getElementById('clear-filters'),
+    shareFiltersButton: document.getElementById('share-filters'),
+    savePresetButton: document.getElementById('save-preset'),
+    presetModal: document.getElementById('preset-modal'),
+    cancelPresetButton: document.getElementById('cancel-preset'),
+    confirmPresetButton: document.getElementById('confirm-preset'),
+    presetNameInput: document.getElementById('preset-name') as HTMLInputElement,
+    presetsContainer: document.getElementById('presets-container')
+  };
+
+  let activeFilters = new Set();
+  let presets = [];
+
+  // URL Handling
+  function getFiltersFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const filters = params.get('filters')?.split(',') || [];
+    const sort = params.get('sort') || 'rating-desc';
+    return { filters, sort };
+  }
+
+  function updateURL() {
+    const filters = Array.from(activeFilters);
+    const sort = elements.sortSelect.value;
+    const params = new URLSearchParams();
+    if (filters.length) params.set('filters', filters.join(','));
+    if (sort !== 'rating-desc') params.set('sort', sort);
+    
+    const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    window.history.replaceState({}, '', newURL);
+  }
+
+  // Preset Management
+  function loadPresets() {
+    try {
+      const savedPresets = localStorage.getItem(STORAGE_KEYS.PRESETS);
+      presets = savedPresets ? JSON.parse(savedPresets) : defaultPresets;
+      renderPresets();
+    } catch (error) {
+      console.error('Error loading presets:', error);
+      presets = defaultPresets;
+    }
+  }
+
+  function savePreset(name) {
+    const newPreset = {
+      name,
+      filters: Array.from(activeFilters),
+      sort: elements.sortSelect.value
+    };
+    presets.push(newPreset);
+    localStorage.setItem(STORAGE_KEYS.PRESETS, JSON.stringify(presets));
+    renderPresets();
+  }
+
+  function renderPresets() {
+    if (!elements.presetsContainer) return;
+    
+    elements.presetsContainer.innerHTML = presets.map((preset, index) => `
+      <button
+        class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm hover:bg-green-200 flex items-center gap-2"
+        data-preset="${index}"
+      >
+        ${preset.name}
+        <span class="text-xs text-green-600 hover:text-red-600" data-delete="${index}">×</span>
+      </button>
+    `).join('');
+
+    // Add event listeners
+    elements.presetsContainer.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const deleteIndex = target.getAttribute('data-delete');
+        const presetIndex = button.getAttribute('data-preset');
+
+        if (deleteIndex) {
+          e.stopPropagation();
+          presets.splice(parseInt(deleteIndex), 1);
+          localStorage.setItem(STORAGE_KEYS.PRESETS, JSON.stringify(presets));
+          renderPresets();
+        } else if (presetIndex) {
+          applyPreset(presets[parseInt(presetIndex)]);
+        }
+      });
+    });
+  }
+
+  function applyPreset(preset) {
+    // Clear current filters
+    clearFilters(false);
+
+    // Apply preset filters
+    preset.filters.forEach(filter => {
+      const checkbox = document.querySelector(`input[value="${filter}"]`) as HTMLInputElement;
+      if (checkbox) {
+        checkbox.checked = true;
+        addActiveFilter(filter);
+      }
+    });
+
+    // Apply sort
+    if (elements.sortSelect) {
+      elements.sortSelect.value = preset.sort;
+    }
+
+    updatePlaygrounds();
+    savePreferences();
+    updateURL();
+  }
+
+  // Filter Management
+  function loadSavedPreferences() {
+    try {
+      // First check URL parameters
+      const { filters, sort } = getFiltersFromURL();
+      
+      if (filters.length || sort) {
+        // Apply URL filters
+        filters.forEach(filter => {
+          const checkbox = document.querySelector(`input[value="${filter}"]`) as HTMLInputElement;
+          if (checkbox) {
+            checkbox.checked = true;
+            addActiveFilter(filter);
+          }
+        });
+        if (elements.sortSelect) elements.sortSelect.value = sort;
+      } else {
+        // If no URL parameters, try localStorage
+        const savedFilters = localStorage.getItem(STORAGE_KEYS.FILTERS);
+        if (savedFilters) {
+          JSON.parse(savedFilters).forEach((filter: string) => {
+            const checkbox = document.querySelector(`input[value="${filter}"]`) as HTMLInputElement;
+            if (checkbox) {
+              checkbox.checked = true;
+              addActiveFilter(filter);
+            }
+          });
+        }
+
+        const savedSort = localStorage.getItem(STORAGE_KEYS.SORT);
+        if (savedSort && elements.sortSelect) {
+          elements.sortSelect.value = savedSort;
+        }
+      }
+
+      updatePlaygrounds();
+    } catch (error) {
+      console.error('Error loading preferences:', error);
+    }
+  }
+
+  function savePreferences() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.FILTERS, JSON.stringify(Array.from(activeFilters)));
+      localStorage.setItem(STORAGE_KEYS.SORT, elements.sortSelect.value);
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+    }
+  }
+
+  function clearFilters(updateState = true) {
+    // Clear checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach((checkbox: HTMLInputElement) => {
+      checkbox.checked = false;
+    });
+
+    // Reset sort
+    if (elements.sortSelect) {
+      elements.sortSelect.value = 'rating-desc';
+    }
+
+    // Clear active filters
+    activeFilters.clear();
+    if (elements.filtersContainer) {
+      elements.filtersContainer.innerHTML = '';
+    }
+
+    if (updateState) {
+      // Clear localStorage
+      localStorage.removeItem(STORAGE_KEYS.FILTERS);
+      localStorage.removeItem(STORAGE_KEYS.SORT);
+
+      // Clear URL parameters
+      window.history.replaceState({}, '', window.location.pathname);
+
+      // Update display
+      updatePlaygrounds();
+    }
+  }
+
+  // Event Handlers
+  elements.sortSelect?.addEventListener('change', () => {
+    updatePlaygrounds();
+    savePreferences();
+    updateURL();
+  });
+
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const cb = e.target as HTMLInputElement;
+      if (cb.checked) {
+        addActiveFilter(cb.value);
+      } else {
+        removeActiveFilter(cb.value);
+      }
+      updatePlaygrounds();
+      savePreferences();
+      updateURL();
+    });
+  });
+
+  elements.clearFiltersButton?.addEventListener('click', () => clearFilters());
+
+  elements.shareFiltersButton?.addEventListener('click', () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Filter URL copied to clipboard!');
+    });
+  });
+
+  elements.savePresetButton?.addEventListener('click', () => {
+    if (elements.presetModal) elements.presetModal.classList.remove('hidden');
+  });
+
+  elements.cancelPresetButton?.addEventListener('click', () => {
+    if (elements.presetModal) elements.presetModal.classList.add('hidden');
+  });
+
+  elements.confirmPresetButton?.addEventListener('click', () => {
+    const name = elements.presetNameInput?.value.trim();
+    if (name) {
+      savePreset(name);
+      elements.presetNameInput.value = '';
+      if (elements.presetModal) elements.presetModal.classList.add('hidden');
+    }
+  });
+
+  function addActiveFilter(value: string) {
+    activeFilters.add(value);
+    const filterPill = document.createElement('span');
+    filterPill.className = 'inline-flex items-center px-2 py-1 rounded-full text-sm bg-green-100 text-green-800';
+    filterPill.innerHTML = `
+      ${value}
+      <button class="ml-1 text-green-600 hover:text-green-800" data-filter="${value}">×</button>
+    `;
+    filterPill.querySelector('button')?.addEventListener('click', () => {
+      removeActiveFilter(value);
+      const checkbox = document.querySelector(`input[value="${value}"]`) as HTMLInputElement;
+      if (checkbox) checkbox.checked = false;
+      updatePlaygrounds();
+      savePreferences();
+      updateURL();
+    });
+    elements.filtersContainer?.appendChild(filterPill);
+  }
+
+  function removeActiveFilter(value: string) {
+    activeFilters.delete(value);
+    const pill = elements.filtersContainer?.querySelector(`[data-filter="${value}"]`)?.parentElement;
+    if (pill) pill.remove();
+  }
+
+  function updatePlaygrounds() {
+    const event = new CustomEvent('updatePlaygrounds', {
+      detail: {
+        sort: elements.sortSelect.value,
+        filters: Array.from(activeFilters)
+      }
+    });
+    document.dispatchEvent(event);
+  }
+
+  // Initialize
+  window.addEventListener('load', () => {
+    loadPresets();
+    loadSavedPreferences();
+  });
+</script> 

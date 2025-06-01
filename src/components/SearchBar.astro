@@ -1,0 +1,47 @@
+<div class="max-w-2xl mx-auto">
+  <div class="relative">
+    <input
+      type="text"
+      id="search"
+      class="w-full px-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500"
+      placeholder="Search by location, features, or name..."
+    />
+    <button
+      type="submit"
+      class="absolute right-2 top-1/2 -translate-y-1/2 bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
+    >
+      Search
+    </button>
+  </div>
+  
+  <div id="search-results" class="mt-4 bg-white rounded-lg shadow-lg hidden">
+    <!-- Results will be populated here -->
+  </div>
+</div>
+
+<script>
+  import { PagefindUI } from '@pagefind/default-ui'
+
+  window.addEventListener('load', () => {
+    new PagefindUI({
+      element: '#search-results',
+      showImages: true,
+      showSubResults: true,
+      autofocus: true
+    });
+
+    const searchInput = document.querySelector('#search');
+    const searchResults = document.querySelector('#search-results');
+
+    searchInput.addEventListener('focus', () => {
+      searchResults.classList.remove('hidden');
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+  });
+</script> 

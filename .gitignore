@@ -1,0 +1,31 @@
+# Google Places API Key
+GOOGLE_PLACES_API_KEY=yAIzaSyB3BfLZIr-84lWvwBys45zwjng3w_z10Pc
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+.astro/

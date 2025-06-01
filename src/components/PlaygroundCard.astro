@@ -1,0 +1,52 @@
+---
+const { playground } = Astro.props;
+
+// Function to create a slug from the playground name
+const createSlug = (name) => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
+const slug = createSlug(playground.name);
+---
+
+<article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+  <div class="aspect-video bg-gray-200 relative">
+    <!-- If we have an image, use it; otherwise, use a placeholder -->
+    <img
+      src={playground.image || 'https://via.placeholder.com/400x300?text=Playground'}
+      alt={playground.name}
+      class="w-full h-full object-cover"
+    />
+    {playground.rating && (
+      <div class="absolute top-2 right-2 bg-white rounded-full px-2 py-1 text-sm font-bold text-green-600">
+        ★ {playground.rating.toFixed(1)}
+      </div>
+    )}
+  </div>
+  
+  <div class="p-4">
+    <h3 class="text-xl font-bold mb-2">{playground.name}</h3>
+    <p class="text-gray-600 text-sm mb-3">{playground.street}</p>
+    
+    {playground.description && (
+      <p class="text-gray-700 mb-4 line-clamp-2">
+        {playground.description}
+      </p>
+    )}
+    
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-gray-600">
+        {playground.reviews && `${playground.reviews} reviews`}
+      </div>
+      <a
+        href={`/playground/${slug}`}
+        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+      >
+        View Details
+      </a>
+    </div>
+  </div>
+</article> 

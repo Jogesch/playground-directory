@@ -1,0 +1,153 @@
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const response = await fetch('../../data/london_playgrounds.json');
+  const playgrounds = await response.json();
+  
+  return playgrounds.map((playground) => {
+    const slug = playground.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+      
+    return {
+      params: { slug },
+      props: { playground },
+    };
+  });
+}
+
+const { playground } = Astro.props;
+
+<Layout title={`${playground.name} - London Playgrounds`}>
+  <article class="container mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+      <div class="aspect-video bg-gray-200 relative">
+        <img
+          src={playground.image || 'https://via.placeholder.com/1200x600?text=Playground'}
+          alt={playground.name}
+          class="w-full h-full object-cover"
+        />
+        {playground.rating && (
+          <div class="absolute top-4 right-4 bg-white rounded-full px-4 py-2 text-lg font-bold text-green-600">
+            ★ {playground.rating.toFixed(1)}
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column: Details -->
+      <div class="lg:col-span-2">
+        <h1 class="text-4xl font-bold mb-4">{playground.name}</h1>
+        <p class="text-gray-600 mb-6">{playground.street}, {playground.postal_code}</p>
+        
+        {playground.description && (
+          <div class="prose max-w-none mb-8">
+            <h2 class="text-2xl font-bold mb-4">About this Playground</h2>
+            <p>{playground.description}</p>
+          </div>
+        )}
+
+        <!-- Reviews Section -->
+        {playground.reviews && (
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Reviews</h2>
+            <div class="flex items-center mb-4">
+              <span class="text-3xl font-bold text-green-600 mr-2">
+                {playground.rating.toFixed(1)}
+              </span>
+              <div>
+                <div class="flex items-center">
+                  {'★'.repeat(Math.round(playground.rating))}
+                  {'☆'.repeat(5 - Math.round(playground.rating))}
+                </div>
+                <p class="text-gray-600">{playground.reviews} reviews</p>
+              </div>
+            </div>
+            {playground.reviews_link && (
+              <a
+                href={playground.reviews_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-green-600 hover:underline"
+              >
+                Read reviews on Google Maps
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+
+      <!-- Right Column: Map & Info -->
+      <div>
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 class="text-xl font-bold mb-4">Location</h2>
+          <div id="map" class="h-64 rounded-lg mb-4"></div>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${playground.latitude},${playground.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="block w-full bg-green-600 text-white text-center px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+          >
+            Get Directions
+          </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-bold mb-4">Additional Information</h2>
+          <dl class="space-y-2">
+            {playground.subtypes && (
+              <div>
+                <dt class="font-semibold">Type</dt>
+                <dd>{playground.subtypes}</dd>
+              </div>
+            )}
+            {playground.age_range && (
+              <div>
+                <dt class="font-semibold">Age Range</dt>
+                <dd>{playground.age_range}</dd>
+              </div>
+            )}
+            {playground.phone && (
+              <div>
+                <dt class="font-semibold">Phone</dt>
+                <dd>{playground.phone}</dd>
+              </div>
+            )}
+            {playground.site && (
+              <div>
+                <dt class="font-semibold">Website</dt>
+                <dd>
+                  <a
+                    href={playground.site}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-green-600 hover:underline"
+                  >
+                    Visit website
+                  </a>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <script define:vars={{ playground }}>
+    // Initialize map
+    const map = L.map('map').setView([playground.latitude, playground.longitude], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add marker
+    L.marker([playground.latitude, playground.longitude])
+      .bindPopup(`<b>${playground.name}</b><br>${playground.street}`)
+      .addTo(map);
+  </script>
+</Layout> 

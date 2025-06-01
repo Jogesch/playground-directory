@@ -1,0 +1,9 @@
+GOOGLE_PLACES_API_KEY=AIzaSyB3BfLZIr-84lWvwBys45zwjng3w_z10Pc
+LOG_LEVEL=INFO
+
+name,location,postcode
+Adventure Playground,Highbury,N5 1BH
+Victoria Park Playground,Victoria Park,E9 7DD
+Coram's Fields,Bloomsbury,WC1N 1DN
+Diana Memorial Playground,Kensington Gardens,W2 2UH
+Battersea Park Children's Zoo Playground,Battersea,SW11 4NJ

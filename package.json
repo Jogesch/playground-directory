@@ -1,0 +1,27 @@
+{
+  "name": "london-playgrounds-directory",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.0.0",
+    "@astrojs/image": "^0.18.0",
+    "astro": "^3.0.0",
+    "leaflet": "^1.9.4",
+    "sharp": "^0.32.6",
+    "tailwindcss": "^3.3.3",
+    "pagefind": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.9",
+    "@types/react": "^18.2.33",
+    "typescript": "^5.2.2",
+    "eslint": "^8.52.0",
+    "eslint-config-next": "^14.0.0"
+  }
+} 
