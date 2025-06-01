@@ -5,30 +5,32 @@ import SearchBar from '../components/SearchBar.astro';
 import FilterBar from '../components/FilterBar.astro';
 import playgroundsData from '../../london_playgrounds.json';
 
-// Function to create a valid slug
-function createSlug(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
 const playgrounds = playgroundsData;
 
 // Process playground data for the map and filtering
-const processedPlaygrounds = playgrounds
-  .filter(playground => playground.name && typeof playground.name === 'string')
-  .map(playground => ({
-    ...playground,
-    // Add slug to each playground
-    slug: createSlug(playground.name),
-    // Determine area based on postal code or coordinates
-    area: determineArea(playground.postal_code),
-    // Extract amenities from description or subtypes
-    amenities: extractAmenities(playground.description, playground.subtypes)
-  }))
-  .filter(playground => playground.slug); // Ensure we have valid slugs
+const processedPlaygrounds = (() => {
+  // Function to create a valid slug
+  function createSlug(name: string) {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
+  return playgrounds
+    .filter(playground => playground.name && typeof playground.name === 'string')
+    .map(playground => ({
+      ...playground,
+      // Add slug to each playground
+      slug: createSlug(playground.name),
+      // Determine area based on postal code or coordinates
+      area: determineArea(playground.postal_code),
+      // Extract amenities from description or subtypes
+      amenities: extractAmenities(playground.description, playground.subtypes)
+    }))
+    .filter(playground => playground.slug); // Ensure we have valid slugs
+})();
 
 // Get featured playgrounds (highest rated)
 const featuredPlaygrounds = processedPlaygrounds

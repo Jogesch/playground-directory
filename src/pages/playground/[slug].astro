@@ -2,17 +2,17 @@
 import Layout from '../../layouts/Layout.astro';
 import playgroundsData from '../../../london_playgrounds.json';
 
-// Function to create a valid slug
-function createSlug(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
 export async function getStaticPaths() {
   const playgrounds = playgroundsData;
+  
+  // Function to create a valid slug
+  function createSlug(name: string) {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
   
   return playgrounds
     .filter(playground => playground.name && typeof playground.name === 'string')
