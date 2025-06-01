@@ -1,3 +1,7 @@
+---
+// Component props can be defined here if needed
+---
+
 <div class="max-w-2xl mx-auto">
   <div class="relative">
     <input
@@ -8,6 +12,7 @@
     />
     <button
       type="submit"
+      id="search-button"
       class="absolute right-2 top-1/2 -translate-y-1/2 bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
     >
       Search
@@ -20,28 +25,39 @@
 </div>
 
 <script>
-  import { PagefindUI } from '@pagefind/default-ui'
+  const searchInput = document.querySelector('#search');
+  const searchButton = document.querySelector('#search-button');
+  const searchResults = document.querySelector('#search-results');
 
-  window.addEventListener('load', () => {
-    new PagefindUI({
-      element: '#search-results',
-      showImages: true,
-      showSubResults: true,
-      autofocus: true
-    });
+  // Function to trigger search
+  function performSearch() {
+    const searchTerm = searchInput.value.toLowerCase();
+    // Dispatch a custom event that the main page can listen to
+    document.dispatchEvent(new CustomEvent('playground-search', {
+      detail: { searchTerm }
+    }));
+  }
 
-    const searchInput = document.querySelector('#search');
-    const searchResults = document.querySelector('#search-results');
+  // Add event listeners
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      performSearch();
+    }
+  });
 
-    searchInput.addEventListener('focus', () => {
+  searchButton.addEventListener('click', performSearch);
+
+  // Show/hide results
+  searchInput.addEventListener('focus', () => {
+    if (searchInput.value.trim()) {
       searchResults.classList.remove('hidden');
-    });
+    }
+  });
 
-    // Hide results when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-        searchResults.classList.add('hidden');
-      }
-    });
+  // Hide results when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.add('hidden');
+    }
   });
 </script> 

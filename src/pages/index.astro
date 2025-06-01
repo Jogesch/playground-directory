@@ -114,45 +114,47 @@ function extractAmenities(description, subtypes) {
       markers.set(playground.name, marker);
     });
 
-    // Handle filtering and sorting
-    document.addEventListener('updatePlaygrounds', (e) => {
-      const { sort, filters } = e.detail;
-      
-      // Filter playgrounds
-      let filtered = processedPlaygrounds.filter(playground => {
-        if (filters.length === 0) return true;
-        
-        return filters.some(filter => {
-          // Check area
-          if (playground.area === filter) return true;
-          // Check age range
-          if (playground.age_range && playground.age_range.includes(filter)) return true;
-          // Check amenities
-          if (playground.amenities && playground.amenities.includes(filter)) return true;
-          return false;
+    // Function to filter playgrounds
+    function filterPlaygrounds(filters = [], searchTerm = '') {
+      let filtered = processedPlaygrounds;
+
+      // Apply search filter if there's a search term
+      if (searchTerm) {
+        filtered = filtered.filter(playground => {
+          const searchableText = `
+            ${playground.name}
+            ${playground.description || ''}
+            ${playground.street || ''}
+            ${playground.area || ''}
+            ${playground.amenities?.join(' ') || ''}
+          `.toLowerCase();
+          return searchableText.includes(searchTerm.toLowerCase());
         });
-      });
+      }
 
-      // Sort playgrounds
-      filtered.sort((a, b) => {
-        switch (sort) {
-          case 'rating-desc':
-            return b.rating - a.rating;
-          case 'rating-asc':
-            return a.rating - b.rating;
-          case 'reviews-desc':
-            return b.reviews - a.reviews;
-          case 'name-asc':
-            return a.name.localeCompare(b.name);
-          case 'name-desc':
-            return b.name.localeCompare(a.name);
-          default:
-            return 0;
-        }
-      });
+      // Apply other filters
+      if (filters.length > 0) {
+        filtered = filtered.filter(playground => {
+          return filters.some(filter => {
+            // Check area
+            if (playground.area === filter) return true;
+            // Check age range
+            if (playground.age_range && playground.age_range.includes(filter)) return true;
+            // Check amenities
+            if (playground.amenities && playground.amenities.includes(filter)) return true;
+            return false;
+          });
+        });
+      }
 
-      // Update grid
+      return filtered;
+    }
+
+    // Function to update the UI with filtered results
+    function updateUI(filtered) {
       const grid = document.getElementById('playgrounds-grid');
+      
+      // Update grid
       grid.innerHTML = filtered.map(playground => `
         <article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
           <div class="aspect-video bg-gray-200 relative">
@@ -183,7 +185,7 @@ function extractAmenities(description, subtypes) {
                 ${playground.reviews ? `${playground.reviews} reviews` : ''}
               </div>
               <a
-                href="/playground/${playground.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}"
+                href="/playground/${playground.slug}"
                 class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
               >
                 View Details
@@ -202,6 +204,40 @@ function extractAmenities(description, subtypes) {
           marker.remove();
         }
       });
+    }
+
+    // Listen for search events
+    document.addEventListener('playground-search', (e) => {
+      const { searchTerm } = e.detail;
+      const filtered = filterPlaygrounds([], searchTerm);
+      updateUI(filtered);
+    });
+
+    // Handle filtering and sorting
+    document.addEventListener('updatePlaygrounds', (e) => {
+      const { sort, filters } = e.detail;
+      const searchTerm = document.querySelector('#search')?.value || '';
+      let filtered = filterPlaygrounds(filters, searchTerm);
+      
+      // Sort playgrounds
+      filtered.sort((a, b) => {
+        switch (sort) {
+          case 'rating-desc':
+            return b.rating - a.rating;
+          case 'rating-asc':
+            return a.rating - b.rating;
+          case 'reviews-desc':
+            return b.reviews - a.reviews;
+          case 'name-asc':
+            return a.name.localeCompare(b.name);
+          case 'name-desc':
+            return b.name.localeCompare(a.name);
+          default:
+            return 0;
+        }
+      });
+
+      updateUI(filtered);
     });
   </script>
 </Layout> 
